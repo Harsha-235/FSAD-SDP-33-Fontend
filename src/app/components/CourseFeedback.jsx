@@ -10,7 +10,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 
 import { authService } from '../services/authService';
 import { courseService } from '../services/courseService';
-import { apiUrl } from '../config/api';
 
 import { ArrowLeft, Star } from 'lucide-react';
 import { toast } from 'sonner';
@@ -85,7 +84,7 @@ export default function CourseFeedback() {
         status: 'SUBMITTED'
       };
 
-      await fetch(apiUrl("/api/feedback"), {
+      await fetch("http://localhost:8080/api/feedback", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -110,209 +109,170 @@ export default function CourseFeedback() {
     }
   };
 
- return (
-  <div className="min-h-screen bg-gray-100 flex">
+  return (
+    <div className="min-h-screen bg-gray-50">
 
-    {/* SIDEBAR */}
-    <div className="hidden md:flex w-64 bg-white shadow-lg flex-col p-6">
-      <h2 className="text-xl font-bold mb-6">Feedback Panel</h2>
-
-      <Button
-        variant="ghost"
-        className="justify-start"
-        onClick={() => navigate('/student')}
-      >
-        <ArrowLeft className="h-4 w-4 mr-2" />
-        Dashboard
-      </Button>
-
-      <div className="mt-10 text-sm text-gray-500">
-        Share your course experience to help improve learning quality.
-      </div>
-    </div>
-
-    {/* MAIN CONTENT */}
-    <div className="flex-1 p-6">
-
-      <div className="max-w-5xl mx-auto space-y-6">
-
-        {/* TITLE */}
-        <div>
-          <h1 className="text-2xl font-bold">Course Feedback</h1>
-          <p className="text-gray-500">
-            Evaluate course quality and share your experience
-          </p>
+      <header className="bg-white border-b border-gray-200">
+        <div className="max-w-3xl mx-auto px-4 py-4">
+          <Button variant="ghost" onClick={() => navigate('/student')}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Dashboard
+          </Button>
         </div>
+      </header>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <div className="max-w-3xl mx-auto px-4 py-8">
+        <Card>
 
-          {/* SECTION 1: SELECT COURSE */}
-          <div className="bg-white p-6 rounded-xl shadow-sm border space-y-4">
+          <CardHeader>
+            <CardTitle>Course Feedback</CardTitle>
+            <CardDescription>
+              Share your experience and help improve course quality
+            </CardDescription>
+          </CardHeader>
 
-            <h2 className="font-semibold text-lg">Select Course</h2>
+          <CardContent>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
 
-            <Controller
-              name="courseId"
-              control={control}
-              rules={{ required: "Please select a course" }}
-              render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger className="h-12">
-                    <SelectValue placeholder="Choose course..." />
-                  </SelectTrigger>
+              {/* COURSE SELECTION */}
+              <div className="space-y-2">
+                <Label>Select Course</Label>
 
-                  <SelectContent>
-                    {courses.map((course) => (
-                      <SelectItem
-                        key={course.id}
-                        value={String(course.id)}
-                      >
-                        {course.code || "NO-CODE"} - {course.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            />
+                <Controller
+                  name="courseId"
+                  control={control}
+                  rules={{ required: "Please select a course" }}
+                  render={({ field }) => (
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Choose a course" />
+                      </SelectTrigger>
 
-            {errors.courseId && (
-              <p className="text-sm text-red-500">
-                {errors.courseId.message}
-              </p>
-            )}
-          </div>
+                      <SelectContent>
+                        {courses.map((course) => (
+                          <SelectItem key={course.id} value={String(course.id)}>
+                            {course.code || "NO-CODE"} - {course.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
 
-          {/* SECTION 2: COURSE DETAILS */}
-          {selectedCourseId && (
-            <div className="bg-white p-6 rounded-xl shadow-sm border">
+                    </Select>
+                  )}
+                />
 
-              {(() => {
-                const course = courses.find(
-                  c => String(c.id) === String(selectedCourseId)
-                );
+                {errors.courseId && (
+                  <p className="text-sm text-red-600">
+                    {errors.courseId.message}
+                  </p>
+                )}
+              </div>
 
-                return course ? (
-                  <div className="grid md:grid-cols-2 gap-6">
+              {/* COURSE PREVIEW */}
+              {selectedCourseId && (
+                <div className="p-4 bg-gray-50 rounded-lg border">
+                  {(() => {
+                    const course = courses.find(c => String(c.id) === String(selectedCourseId));
 
-                    <div className="p-4 bg-gray-50 rounded-lg">
-                      <p className="text-sm text-gray-500">Instructor</p>
-                      <p className="font-medium">
-                        {course.instructor || "N/A"}
-                      </p>
-                    </div>
+                    return course ? (
+                      <div className="space-y-2 text-sm">
 
-                    <div className="p-4 bg-gray-50 rounded-lg">
-                      <p className="text-sm text-gray-500">Department</p>
-                      <p className="font-medium">
-                        {course.department || "N/A"}
-                      </p>
-                    </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Instructor:</span>
+                          <span className="font-medium">{course.instructor || "N/A"}</span>
+                        </div>
 
-                  </div>
-                ) : null;
-              })()}
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Department:</span>
+                          <span className="font-medium">{course.department || "N/A"}</span>
+                        </div>
 
-            </div>
-          )}
-
-          {/* SECTION 3: RATING */}
-          <div className="bg-white p-6 rounded-xl shadow-sm border space-y-4 text-center">
-
-            <h2 className="font-semibold text-lg">Rate Course</h2>
-
-            <Controller
-              name="rating"
-              control={control}
-              rules={{
-                required: "Please select a rating",
-                min: { value: 1, message: "Please select a rating" }
-              }}
-              render={({ field }) => (
-                <div className="flex justify-center gap-4">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <button
-                      key={star}
-                      type="button"
-                      onClick={() => {
-                        setRatingUI(star);
-                        field.onChange(star);
-                      }}
-                      onMouseEnter={() => setHoveredRating(star)}
-                      onMouseLeave={() => setHoveredRating(0)}
-                      className="transition transform hover:scale-125"
-                    >
-                      <Star
-                        className={`h-10 w-10 ${
-                          star <= (hoveredRating || ratingUI)
-                            ? 'fill-yellow-400 text-yellow-400'
-                            : 'text-gray-300'
-                        }`}
-                      />
-                    </button>
-                  ))}
+                      </div>
+                    ) : null;
+                  })()}
                 </div>
               )}
-            />
 
-            {errors.rating && (
-              <p className="text-sm text-red-500">
-                {errors.rating.message}
-              </p>
-            )}
-          </div>
+              {/* RATING */}
+              <div className="space-y-2">
+                <Label>Overall Rating</Label>
 
-          {/* SECTION 4: COMMENTS */}
-          <div className="bg-white p-6 rounded-xl shadow-sm border space-y-3">
-
-            <h2 className="font-semibold text-lg">Your Feedback</h2>
-
-            <Controller
-              name="comments"
-              control={control}
-              rules={{
-                required: "Feedback is required",
-                minLength: {
-                  value: 10,
-                  message: "Minimum 10 characters required"
-                }
-              }}
-              render={({ field }) => (
-                <Textarea
-                  {...field}
-                  rows={5}
-                  className="rounded-lg"
-                  placeholder="Write your thoughts about the course..."
+                <Controller
+                  name="rating"
+                  control={control}
+                  rules={{
+                    required: "Please select a rating",
+                    min: { value: 1, message: "Please select a rating" }
+                  }}
+                  render={({ field }) => (
+                    <div className="flex items-center gap-2">
+                      {[1,2,3,4,5].map((star) => (
+                        <button
+                          key={star}
+                          type="button"
+                          onClick={() => {
+                            setRatingUI(star);
+                            field.onChange(star);
+                          }}
+                          onMouseEnter={() => setHoveredRating(star)}
+                          onMouseLeave={() => setHoveredRating(0)}
+                        >
+                          <Star
+                            className={`h-8 w-8 ${
+                              star <= (hoveredRating || ratingUI)
+                                ? 'fill-yellow-400 text-yellow-400'
+                                : 'text-gray-300'
+                            }`}
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 />
-              )}
-            />
 
-            {errors.comments && (
-              <p className="text-sm text-red-500">
-                {errors.comments.message}
-              </p>
-            )}
-          </div>
+                {errors.rating && (
+                  <p className="text-sm text-red-600">{errors.rating.message}</p>
+                )}
+              </div>
 
-          {/* ACTION BUTTONS */}
-          <div className="flex justify-end gap-3">
+              {/* COMMENTS */}
+              <div className="space-y-2">
+                <Label>Your Feedback</Label>
 
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => navigate('/student')}
-            >
-              Cancel
-            </Button>
+                <Controller
+                  name="comments"
+                  control={control}
+                  rules={{
+                    required: "Feedback is required",
+                    minLength: {
+                      value: 10,
+                      message: "Minimum 10 characters required"
+                    }
+                  }}
+                  render={({ field }) => (
+                    <Textarea {...field} rows={6} />
+                  )}
+                />
 
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Submitting..." : "Submit Feedback"}
-            </Button>
+                {errors.comments && (
+                  <p className="text-sm text-red-600">{errors.comments.message}</p>
+                )}
+              </div>
 
-          </div>
+              {/* BUTTONS */}
+              <div className="flex gap-3">
+                <Button type="button" variant="outline" onClick={() => navigate('/student')}>
+                  Cancel
+                </Button>
 
-        </form>
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? "Submitting..." : "Submit Feedback"}
+                </Button>
+              </div>
+
+            </form>
+          </CardContent>
+        </Card>
       </div>
     </div>
-  </div>
-);
+  );
 }
