@@ -36,7 +36,7 @@ export default function AdminDashboard() {
   const [courses, setCourses] = useState([]);
   const [services, setServices] = useState([]);
   const [instructors, setInstructors] = useState([]);
-  const [students, setStudents] = useState([]);
+const[students,setStudents] = useState([]);
   const [courseForm, setCourseForm] = useState({
     code: "", name: "", department: "", instructor: ""
   });
@@ -50,50 +50,63 @@ export default function AdminDashboard() {
   });
   
 
-  const [search, setSearch] = useState("");
-  const [typeFilter, setTypeFilter] = useState("");
+const [search, setSearch] = useState("");
+const [typeFilter, setTypeFilter] = useState("");
+
+
+
 
   useEffect(() => {
     loadAll();
   }, []);
-
   const safeJson = async (res) => {
-    try {
-      if (!res.ok) {
-        console.error("API Error:", res.status);
-        return [];
-      }
+  if (!res.ok) {
+    console.error("API Error:", res.status);
+    return [];
+  }
 
-      const contentType = res.headers.get("content-type");
-
-      // ✅ If no JSON response, return empty
-      if (!contentType || !contentType.includes("application/json")) {
-        return [];
-      }
-
-      return await res.json();
-
-    } catch (err) {
-      console.error("Safe JSON Error:", err);
-      return [];
-    }
-  };
+  const text = await res.text();
+  return text ? JSON.parse(text) : [];
+};
 
   const loadAll = async () => {
+    const safeJson = async (res) => {
+  try {
+    if (!res.ok) {
+      console.error("API Error:", res.status);
+      return [];
+    }
+
+    const contentType = res.headers.get("content-type");
+
+    // ✅ If no JSON response, return empty
+    if (!contentType || !contentType.includes("application/json")) {
+      return [];
+    }
+
+    return await res.json();
+
+  } catch (err) {
+    console.error("Safe JSON Error:", err);
+    return [];
+  }
+};
     const token = authService.getToken();
 
-    const [fb, c, s, i] = await Promise.all([
-      fetch(apiUrl("/api/feedback")).then(r => r.json()),
-      courseService.getAllCourses(),
-      fetch(apiUrl("/api/service"), { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
-      fetch(apiUrl("/api/instructor"), { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
-    ]);
+const [fb, c, s, i, stu] = await Promise.all([
+  fetch(apiUrl("/api/feedback")).then(r => r.json()),
+  courseService.getAllCourses(),
+  fetch(apiUrl("/api/service"), { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
+  fetch(apiUrl("/api/instructor"), { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
+ 
+]);
 
-    setFeedbacks(fb || []);
-    setCourses(c || []);
-    setServices(s || []);
-    setInstructors(i || []);
-    setStudents([]); // Student fetch wasn't in the original array, defaulting to empty array to avoid undefined errors
+setFeedbacks(fb || []);
+setCourses(c || []);
+setServices(s || []);
+setInstructors(i || []);
+setStudents(stu || []);
+
   };
 
   // ================= ADD =================
@@ -666,7 +679,7 @@ export default function AdminDashboard() {
   )) : (
 
     <div className="col-span-2 text-center text-gray-400 py-10">
-      No instructors added yet 👨🏫
+      No instructors added yet 👨‍🏫
     </div>
 
   )}
